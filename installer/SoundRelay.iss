@@ -2,7 +2,7 @@
 #define MyAppName "SoundRelay"
 #define MyAppVersion "1.0.0"
 #define MyAppPublisher "SoundRelay Open Source"
-#define MyAppURL "https://github.com/sjongesjongeja/audiorelay"
+#define MyAppURL "https://github.com/sjongesjongeja/SoundRelay"
 #define MyAppExeName "SoundRelay.exe"
 
 [Setup]

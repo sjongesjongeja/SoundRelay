@@ -16,7 +16,7 @@ if exist %GH_BIN% (
     if %ERRORLEVEL% equ 0 (
         echo [2/3] Je bent ingelogd bij GitHub!
         echo Bezig met aanmaken van de repository op GitHub en pushen...
-        %GH_BIN% repo create audiorelay --public --source=. --push
+        %GH_BIN% repo create SoundRelay --public --source=. --push
         if %ERRORLEVEL% equ 0 (
             echo.
             echo ========================================================
@@ -34,7 +34,7 @@ if exist %GH_BIN% (
             %GH_BIN% auth login -w -p https
             echo.
             echo Repository aanmaken en pushen...
-            %GH_BIN% repo create audiorelay --public --source=. --push
+            %GH_BIN% repo create SoundRelay --public --source=. --push
             pause
             exit /b 0
         )
@@ -45,10 +45,10 @@ echo.
 echo ========================================================
 echo Alternatieve methode (Handmatig):
 echo 1. Ga naar: https://github.com/new
-echo 2. Noem de repository bijvoorbeeld: audiorelay
+echo 2. Noem de repository: SoundRelay
 echo 3. Voer daarna deze commando's uit in de terminal:
 echo.
-echo    git remote add origin https://github.com/sjongesjongeja/audiorelay.git
+echo    git remote add origin https://github.com/sjongesjongeja/SoundRelay.git
 echo    git push -u origin main
 echo ========================================================
 echo.
