@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SoundRelay - PC Audio Receiver</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Fast QRCode generator from cdnjs -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo-group">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1>SoundRelay</h1>
+                    <div class="subtitle">Draadloze Audio Stream van Telefoon naar PC</div>
+                </div>
+            </div>
+            <div>
+                <span id="conn-badge" class="badge offline">
+                    <span class="badge-dot"></span>
+                    <span id="conn-badge-text">Wachten op verbinding...</span>
+                </span>
+            </div>
+        </header>
+
+        <div class="grid">
+            <!-- Audio Meter & Visualizer Card -->
+            <div class="card">
+                <div class="card-title">
+                    <span>Geluidsniveau (Live VU)</span>
+                    <span id="bitrate-tag" style="font-family: monospace; font-size: 0.8rem; color: #10b981;">0 kbps</span>
+                </div>
+                <div class="meter-container">
+                    <div class="channel-meter">
+                        <span class="channel-label">L</span>
+                        <div class="meter-track">
+                            <div id="meter-left" class="meter-fill"></div>
+                        </div>
+                    </div>
+                    <div class="channel-meter">
+                        <span class="channel-label">R</span>
+                        <div class="meter-track">
+                            <div id="meter-right" class="meter-fill"></div>
+                        </div>
+                    </div>
+                    <canvas id="visualizer-canvas"></canvas>
+                </div>
+            </div>
+
+            <!-- Streaming Status Card -->
+            <div class="card">
+                <div class="card-title">Stream Status</div>
+                <div class="stat-row">
+                    <span class="stat-label">Verbonden apparaat:</span>
+                    <span id="stat-client" class="stat-val" style="color: #06b6d4;">Geen</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Buffer Latentie:</span>
+                    <span id="stat-latency" class="stat-val">0 ms</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Ontvangen pakketten:</span>
+                    <span id="stat-packets" class="stat-val">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Verloren pakketten:</span>
+                    <span id="stat-lost" class="stat-val">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Sample Rate:</span>
+                    <span class="stat-val">48,000 Hz (16-bit Stereo)</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid">
+            <!-- Audio Output & Volume Controls -->
+            <div class="card">
+                <div class="card-title">PC Geluidsinstellingen</div>
+                
+                <div class="control-group">
+                    <label for="device-select">Uitvoerapparaat (Speakers / Koptelefoon):</label>
+                    <select id="device-select"></select>
+                </div>
+
+                <div class="control-group">
+                    <label>
+                        Volume Versterking: 
+                        <span id="volume-val" class="slider-val">100%</span>
+                    </label>
+                    <input type="range" id="volume-slider" min="0" max="2" step="0.05" value="1.0">
+                </div>
+
+                <div class="control-group">
+                    <label>Buffer Profiel (Vertraging vs Stabiliteit):</label>
+                    <div class="btn-group">
+                        <button class="btn-chip" data-latency="15">Ultra Low (15ms)</button>
+                        <button class="btn-chip active" data-latency="30">Standaard (30ms)</button>
+                        <button class="btn-chip" data-latency="60">Stabiel (60ms)</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Connect Phone & APK Card -->
+            <div class="card">
+                <div class="card-title">
+                    <span>Telefoon Verbinden & APK</span>
+                    <span style="font-size: 0.75rem; color: var(--accent);">Directe QR Download</span>
+                </div>
+                
+                <div style="display: flex; gap: 8px; margin-bottom: 14px;">
+                    <button id="tab-apk" class="btn-chip active">📲 Download APK (Aanbevolen)</button>
+                    <button id="tab-webmic" class="btn-chip">🎙️ Web Streamer (Geen app)</button>
+                </div>
+
+                <div id="section-apk" class="qr-box" style="margin-top: 4px;">
+                    <div class="qr-canvas-holder">
+                        <canvas id="qr-apk" width="140" height="140"></canvas>
+                    </div>
+                    <div class="qr-tip">
+                        <strong>Scan met je telefoon camera of QR-scanner</strong><br>
+                        om <code>SoundRelay.apk</code> direct te downloaden &amp; installeren.
+                    </div>
+                    <a id="btn-download-apk" href="/download/SoundRelay.apk" class="btn-link" download>
+                        ⬇️ Download SoundRelay.apk (Directe link)
+                    </a>
+                </div>
+
+                <div id="section-webmic" class="qr-box" style="margin-top: 4px; display: none;">
+                    <div class="qr-canvas-holder">
+                        <canvas id="qr-webmic" width="140" height="140"></canvas>
+                    </div>
+                    <div class="qr-tip">
+                        Scan om direct via de mobiele browser (ook iPhone) te streamen via WebSockets.
+                    </div>
+                    <a href="/mic" class="btn-link" target="_blank" style="background: linear-gradient(135deg, #06b6d4, #3b82f6);">
+                        🎙️ Open Mobiele Web Streamer (/mic)
+                    </a>
+                </div>
+
+                <div style="margin-top: 16px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 12px;">
+                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 6px;">PC IP-adressen op je netwerk:</div>
+                    <div class="ip-chip-container" id="ip-list">
+                        <span class="ip-chip">Laden...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Android APK and USB Instructions Card -->
+        <div class="card" style="margin-bottom: 24px;">
+            <div class="card-title">Android App & USB Modus</div>
+            <div style="font-size: 0.85rem; line-height: 1.6; color: #d1d5db;">
+                <p><strong>1. Android App (Systeemgeluid streamen):</strong><br>
+                Installeer <code>SoundRelay.apk</code> op je telefoon. Deze app vangt al het interne geluid op (Spotify, YouTube, games, etc.) via Android's officiële <em>AudioPlaybackCapture</em> API en streamt het zonder kwaliteitsverlies met lage latency.</p>
+                
+                <p style="margin-top: 10px;"><strong>2. USB Kabel (0ms Latentie - Geen Wi-Fi nodig):</strong><br>
+                Sluit je telefoon aan via USB met USB-debugging ingeschakeld en voer <code>usb_stream.bat</code> uit. Dit stuurt audio direct via de kabel voor perfecte synchroniciteit bij gamen en video's!</p>
+            </div>
+        </div>
+
+        <footer>
+            SoundRelay &copy; 2026 - Lokale Low-Latency Audio Streaming
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">SoundRelay</string>
+    <string name="start_stream">Start Audio Stream</string>
+    <string name="stop_stream">Stop Audio Stream</string>
+    <string name="internal_audio">Systeemgeluid (Spotify, YouTube, Games)</string>
+    <string name="mic_audio">Microfoon (Draadloze PC Mic)</string>
+</resources>

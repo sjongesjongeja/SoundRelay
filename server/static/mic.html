@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>SoundRelay Mobile Streamer</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+        body {
+            background-color: #0d1117;
+            color: #f0f6fc;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 400px;
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 20px;
+            padding: 28px 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .logo-icon {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, #10b981, #06b6d4);
+            border-radius: 18px;
+            margin: 0 auto 16px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
+        }
+        .logo-icon svg {
+            width: 36px;
+            height: 36px;
+            fill: #ffffff;
+        }
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 6px;
+        }
+        p {
+            font-size: 0.9rem;
+            color: #8b949e;
+            margin-bottom: 24px;
+        }
+        .stream-btn {
+            width: 100%;
+            padding: 16px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            background: linear-gradient(135deg, #10b981, #06b6d4);
+            color: #ffffff;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .stream-btn.active {
+            background: #ef4444;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+        }
+        .meter-box {
+            margin-top: 24px;
+            height: 12px;
+            background: #21262d;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .meter-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #10b981, #3b82f6);
+            transition: width 0.05s ease-out;
+        }
+        .status-badge {
+            margin-top: 20px;
+            font-size: 0.85rem;
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 20px;
+            background: #21262d;
+            color: #8b949e;
+        }
+        .status-badge.streaming {
+            background: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.4);
+        }
+        .note {
+            margin-top: 24px;
+            font-size: 0.78rem;
+            color: #6e7681;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo-icon">
+            <svg viewBox="0 0 24 24">
+                <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+                <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+            </svg>
+        </div>
+        <h1>SoundRelay Mobiel</h1>
+        <p>Stream geluid van je telefoon rechtstreeks naar je PC via Wi-Fi.</p>
+
+        <button id="btn-toggle" class="stream-btn">
+            ▶️ Start Streaming
+        </button>
+
+        <div class="meter-box">
+            <div id="meter-fill" class="meter-fill"></div>
+        </div>
+
+        <div id="status-badge" class="status-badge">Niet verbonden</div>
+
+        <div class="note">
+            💡 <strong>Tip voor Android intern systeemgeluid:</strong><br>
+            Wil je games, Spotify of YouTube streamen? Gebruik de meegeleverde SoundRelay Android App (APK) op je telefoon!
+        </div>
+    </div>
+
+    <script>
+        let isStreaming = false;
+        let ws = null;
+        let audioCtx = null;
+        let mediaStream = null;
+        let processorNode = null;
+
+        const btn = document.getElementById("btn-toggle");
+        const statusBadge = document.getElementById("status-badge");
+        const meterFill = document.getElementById("meter-fill");
+
+        btn.addEventListener("click", () => {
+            if (!isStreaming) {
+                startStreaming();
+            } else {
+                stopStreaming();
+            }
+        });
+
+        async function startStreaming() {
+            try {
+                statusBadge.textContent = "Verbinding maken...";
+                const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+                const wsUrl = `${protocol}//${window.location.host}/ws/audio`;
+                
+                ws = new WebSocket(wsUrl);
+                ws.binaryType = "arraybuffer";
+
+                ws.onopen = async () => {
+                    await startAudioCapture();
+                    isStreaming = true;
+                    btn.classList.add("active");
+                    btn.textContent = "⏹️ Stop Streaming";
+                    statusBadge.className = "status-badge streaming";
+                    statusBadge.textContent = "● Live aan het streamen naar PC";
+                };
+
+                ws.onerror = (err) => {
+                    console.error("WS error:", err);
+                    alert("Kan geen verbinding maken met PC receiver.");
+                    stopStreaming();
+                };
+
+                ws.onclose = () => {
+                    if (isStreaming) {
+                        stopStreaming();
+                    }
+                };
+
+            } catch (err) {
+                alert("Microfoon toegang vereist: " + err.message);
+                stopStreaming();
+            }
+        }
+
+        async function startAudioCapture() {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)({
+                sampleRate: 48000
+            });
+
+            mediaStream = await navigator.mediaDevices.getUserMedia({
+                audio: {
+                    echoCancellation: false,
+                    noiseSuppression: false,
+                    autoGainControl: false,
+                    sampleRate: 48000
+                }
+            });
+
+            const source = audioCtx.createMediaStreamSource(mediaStream);
+            // 2048 buffer size gives ~42ms chunks at 48kHz
+            const bufferSize = 2048;
+            processorNode = audioCtx.createScriptProcessor(bufferSize, 1, 1);
+
+            processorNode.onaudioprocess = (e) => {
+                if (!isStreaming || ws.readyState !== WebSocket.OPEN) return;
+
+                const inputChannel = e.inputBuffer.getChannelData(0);
+                const len = inputChannel.length;
+                
+                // Peak calculation for meter
+                let maxPeak = 0;
+                // Convert mono Float32 to stereo Int16 (left and right channels identical)
+                const int16Stereo = new Int16Array(len * 2);
+                for (let i = 0; i < len; i++) {
+                    const sample = inputChannel[i];
+                    const abs = Math.abs(sample);
+                    if (abs > maxPeak) maxPeak = abs;
+
+                    const val = Math.max(-32768, Math.min(32767, Math.round(sample * 32767)));
+                    int16Stereo[i * 2] = val;     // Left
+                    int16Stereo[i * 2 + 1] = val; // Right
+                }
+
+                meterFill.style.width = `${Math.min(100, Math.round(maxPeak * 100))}%`;
+                ws.send(int16Stereo.buffer);
+            };
+
+            source.connect(processorNode);
+            processorNode.connect(audioCtx.destination);
+        }
+
+        function stopStreaming() {
+            isStreaming = false;
+            btn.classList.remove("active");
+            btn.textContent = "▶️ Start Streaming";
+            statusBadge.className = "status-badge";
+            statusBadge.textContent = "Gestopt";
+            meterFill.style.width = "0%";
+
+            if (processorNode) {
+                processorNode.disconnect();
+                processorNode = null;
+            }
+            if (mediaStream) {
+                mediaStream.getTracks().forEach(t => t.stop());
+                mediaStream = null;
+            }
+            if (audioCtx) {
+                audioCtx.close();
+                audioCtx = null;
+            }
+            if (ws) {
+                ws.close();
+                ws = null;
+            }
+        }
+    </script>
+</body>
+</html>
