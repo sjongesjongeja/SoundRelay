@@ -121,40 +121,46 @@ async function loadInitialData() {
             const qrApkCanvas = document.getElementById("qr-apk");
             const apkUrl = `http://${currentPrimaryIp}:59100/download/SoundRelay.apk`;
             if (qrApkCanvas) {
-                QRCode.toCanvas(qrApkCanvas, apkUrl, { width: 140, margin: 1 }, (err) => {
+                QRCode.toCanvas(qrApkCanvas, apkUrl, { width: 135, margin: 1 }, (err) => {
                     if (err) console.error("QR APK error:", err);
+                });
+            }
+
+            const qrIpaCanvas = document.getElementById("qr-ipa");
+            const ipaUrl = `http://${currentPrimaryIp}:59100/download/SoundRelay.ipa`;
+            if (qrIpaCanvas) {
+                QRCode.toCanvas(qrIpaCanvas, ipaUrl, { width: 135, margin: 1 }, (err) => {
+                    if (err) console.error("QR IPA error:", err);
                 });
             }
 
             const qrWebmicCanvas = document.getElementById("qr-webmic");
             const webmicUrl = `http://${currentPrimaryIp}:59100/mic`;
             if (qrWebmicCanvas) {
-                QRCode.toCanvas(qrWebmicCanvas, webmicUrl, { width: 140, margin: 1 }, (err) => {
+                QRCode.toCanvas(qrWebmicCanvas, webmicUrl, { width: 135, margin: 1 }, (err) => {
                     if (err) console.error("QR Webmic error:", err);
                 });
             }
         }
 
-        // Tab switching between APK and WebMic
+        // Tab switching between APK, IPA, and WebMic
         const tabApk = document.getElementById("tab-apk");
+        const tabIpa = document.getElementById("tab-ipa");
         const tabWebmic = document.getElementById("tab-webmic");
         const secApk = document.getElementById("section-apk");
+        const secIpa = document.getElementById("section-ipa");
         const secWebmic = document.getElementById("section-webmic");
 
-        if (tabApk && tabWebmic) {
-            tabApk.addEventListener("click", () => {
-                tabApk.classList.add("active");
-                tabWebmic.classList.remove("active");
-                secApk.style.display = "flex";
-                secWebmic.style.display = "none";
-            });
-            tabWebmic.addEventListener("click", () => {
-                tabWebmic.classList.add("active");
-                tabApk.classList.remove("active");
-                secApk.style.display = "none";
-                secWebmic.style.display = "flex";
-            });
+        function switchTab(activeTab, activeSec) {
+            [tabApk, tabIpa, tabWebmic].forEach(t => { if (t) t.classList.remove("active"); });
+            [secApk, secIpa, secWebmic].forEach(s => { if (s) s.style.display = "none"; });
+            if (activeTab) activeTab.classList.add("active");
+            if (activeSec) activeSec.style.display = "flex";
         }
+
+        if (tabApk) tabApk.addEventListener("click", () => switchTab(tabApk, secApk));
+        if (tabIpa) tabIpa.addEventListener("click", () => switchTab(tabIpa, secIpa));
+        if (tabWebmic) tabWebmic.addEventListener("click", () => switchTab(tabWebmic, secWebmic));
 
         // Volume
         if (data.volume !== undefined) {

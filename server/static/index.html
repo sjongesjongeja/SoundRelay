@@ -108,37 +108,53 @@
                 </div>
             </div>
 
-            <!-- Connect Phone & APK Card -->
+            <!-- Connect Phone & Mobile Downloads Card -->
             <div class="card">
                 <div class="card-title">
-                    <span>Telefoon Verbinden & APK</span>
+                    <span>Telefoon Verbinden &amp; App</span>
                     <span style="font-size: 0.75rem; color: var(--accent);">Directe QR Download</span>
                 </div>
                 
-                <div style="display: flex; gap: 8px; margin-bottom: 14px;">
-                    <button id="tab-apk" class="btn-chip active">📲 Download APK (Aanbevolen)</button>
-                    <button id="tab-webmic" class="btn-chip">🎙️ Web Streamer (Geen app)</button>
+                <div style="display: flex; gap: 6px; margin-bottom: 14px;">
+                    <button id="tab-apk" class="btn-chip active">📲 Android (APK)</button>
+                    <button id="tab-ipa" class="btn-chip">🍏 iPhone (IPA)</button>
+                    <button id="tab-webmic" class="btn-chip">🎙️ Web Stream</button>
                 </div>
 
+                <!-- Android APK Section -->
                 <div id="section-apk" class="qr-box" style="margin-top: 4px;">
                     <div class="qr-canvas-holder">
-                        <canvas id="qr-apk" width="140" height="140"></canvas>
+                        <canvas id="qr-apk" width="135" height="135"></canvas>
                     </div>
                     <div class="qr-tip">
-                        <strong>Scan met je telefoon camera of QR-scanner</strong><br>
-                        om <code>SoundRelay.apk</code> direct te downloaden &amp; installeren.
+                        <strong>Android Toestel:</strong> Scan om <code>SoundRelay.apk</code> direct op je telefoon te downloaden.
                     </div>
                     <a id="btn-download-apk" href="/download/SoundRelay.apk" class="btn-link" download>
-                        ⬇️ Download SoundRelay.apk (Directe link)
+                        ⬇️ Download SoundRelay.apk (Android)
                     </a>
                 </div>
 
-                <div id="section-webmic" class="qr-box" style="margin-top: 4px; display: none;">
+                <!-- iPhone IPA Section -->
+                <div id="section-ipa" class="qr-box" style="margin-top: 4px; display: none;">
                     <div class="qr-canvas-holder">
-                        <canvas id="qr-webmic" width="140" height="140"></canvas>
+                        <canvas id="qr-ipa" width="135" height="135"></canvas>
                     </div>
                     <div class="qr-tip">
-                        Scan om direct via de mobiele browser (ook iPhone) te streamen via WebSockets.
+                        <strong>iPhone (iOS):</strong> Scan om <code>SoundRelay.ipa</code> te downloaden.<br>
+                        Installeer via <em>AltStore</em>, <em>Sideloadly</em> of <em>Scarlet</em>.
+                    </div>
+                    <a id="btn-download-ipa" href="/download/SoundRelay.ipa" class="btn-link" download style="background: linear-gradient(135deg, #6366f1, #a855f7);">
+                        ⬇️ Download SoundRelay.ipa (iPhone)
+                    </a>
+                </div>
+
+                <!-- Web Streamer Section -->
+                <div id="section-webmic" class="qr-box" style="margin-top: 4px; display: none;">
+                    <div class="qr-canvas-holder">
+                        <canvas id="qr-webmic" width="135" height="135"></canvas>
+                    </div>
+                    <div class="qr-tip">
+                        <strong>Zonder installatie:</strong> Scan om direct via Safari of Chrome op je telefoon te streamen.
                     </div>
                     <a href="/mic" class="btn-link" target="_blank" style="background: linear-gradient(135deg, #06b6d4, #3b82f6);">
                         🎙️ Open Mobiele Web Streamer (/mic)

@@ -155,6 +155,27 @@ def get_apk_path():
             return c
     return None
 
+def get_ipa_path():
+    candidates = []
+    if getattr(sys, 'frozen', False):
+        exe_dir = os.path.dirname(sys.executable)
+        candidates.extend([
+            os.path.join(exe_dir, "bin", "SoundRelay.ipa"),
+            os.path.join(exe_dir, "SoundRelay.ipa"),
+            os.path.join(sys._MEIPASS, "bin", "SoundRelay.ipa") if hasattr(sys, '_MEIPASS') else ""
+        ])
+    candidates.extend([
+        os.path.join(os.path.dirname(__file__), "..", "bin", "SoundRelay.ipa"),
+        os.path.join(os.path.dirname(__file__), "SoundRelay.ipa"),
+        os.path.join(os.path.dirname(os.path.abspath(sys.argv[0])), "bin", "SoundRelay.ipa"),
+        os.path.join(os.path.dirname(os.path.abspath(sys.argv[0])), "SoundRelay.ipa"),
+        r"f:\audiorelay\bin\SoundRelay.ipa"
+    ])
+    for c in candidates:
+        if c and os.path.exists(c):
+            return c
+    return None
+
 @app.get("/download/SoundRelay.apk")
 async def download_apk():
     apk_path = get_apk_path()
@@ -166,6 +187,18 @@ async def download_apk():
             headers={"Content-Disposition": 'attachment; filename="SoundRelay.apk"'}
         )
     return JSONResponse({"error": "SoundRelay.apk is niet gevonden op de server."}, status_code=404)
+
+@app.get("/download/SoundRelay.ipa")
+async def download_ipa():
+    ipa_path = get_ipa_path()
+    if ipa_path and os.path.exists(ipa_path):
+        return FileResponse(
+            ipa_path,
+            media_type="application/octet-stream",
+            filename="SoundRelay.ipa",
+            headers={"Content-Disposition": 'attachment; filename="SoundRelay.ipa"'}
+        )
+    return JSONResponse({"error": "SoundRelay.ipa is niet gevonden op de server."}, status_code=404)
 
 @app.get("/")
 async def root():

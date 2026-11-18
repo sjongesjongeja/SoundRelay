@@ -1,4 +1,4 @@
-name: Build SoundRelay (Windows & Android)
+name: Build SoundRelay (Windows, Android & iOS)
 
 on:
   push:
@@ -34,6 +34,27 @@ jobs:
         with:
           name: SoundRelay-Android-APK
           path: android/app/build/outputs/apk/debug/*.apk
+
+  build-ios:
+    name: Build iOS IPA
+    runs-on: macos-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Build iOS App Archive
+        run: |
+          cd ios
+          xcodebuild -project SoundRelay.xcodeproj -scheme SoundRelay -configuration Release -destination 'generic/platform=iOS' -archivePath build/SoundRelay.xcarchive archive CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY=""
+          mkdir -p Payload
+          cp -r build/SoundRelay.xcarchive/Products/Applications/SoundRelay.app Payload/
+          zip -r SoundRelay.ipa Payload
+
+      - name: Upload iOS IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: SoundRelay-iOS-IPA
+          path: ios/SoundRelay.ipa
 
   build-windows:
     name: Build Windows Installer
@@ -83,7 +104,7 @@ jobs:
 
   release:
     name: Create GitHub Release
-    needs: [build-android, build-windows]
+    needs: [build-android, build-ios, build-windows]
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     steps:
@@ -95,6 +116,7 @@ jobs:
         with:
           files: |
             SoundRelay-Android-APK/*.apk
+            SoundRelay-iOS-IPA/*.ipa
             SoundRelay-Windows-Setup/*.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

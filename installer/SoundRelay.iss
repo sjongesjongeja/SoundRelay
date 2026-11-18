@@ -34,6 +34,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 [Files]
 Source: "F:\audiorelay\dist\SoundRelay\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "F:\audiorelay\bin\SoundRelay.apk"; DestDir: "{app}\bin"; Flags: ignoreversion
+Source: "F:\audiorelay\bin\SoundRelay.ipa"; DestDir: "{app}\bin"; Flags: ignoreversion
 Source: "F:\audiorelay\server\usb_stream.bat"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
