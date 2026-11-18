@@ -11,8 +11,10 @@ echo  [1] Start PC Receiver (Ontvang audio op deze PC)
 echo  [2] Verbind via USB Kabel (0ms vertraging met ADB)
 echo  [3] Installeer SoundRelay.apk op aangesloten Android telefoon
 echo  [4] Bouw Android APK opnieuw
+echo  [5] Bouw Windows Installer (.exe) opnieuw
+echo  [6] Push project naar GitHub
 echo.
-set /p choice="Kies [1, 2, 3 of 4]: "
+set /p choice="Kies [1, 2, 3, 4, 5 of 6]: "
 
 if "%choice%"=="1" (
     call "%~dp0server\start_receiver.bat"
@@ -22,6 +24,10 @@ if "%choice%"=="1" (
     call "%~dp0install_apk_on_phone.bat"
 ) else if "%choice%"=="4" (
     call "%~dp0Build-APK.bat"
+) else if "%choice%"=="5" (
+    call "%~dp0Build-Installer.bat"
+) else if "%choice%"=="6" (
+    call "%~dp0Push-To-GitHub.bat"
 ) else (
     echo Ongeldige keuze.
     pause
